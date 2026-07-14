@@ -1,0 +1,42 @@
+# Entorno y Secretos
+.env
+.env.local
+.env.*.local
+
+# Python Caches e Instalación
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node / Frontend Caches y Dependencias
+frontend/node_modules/
+frontend/dist/
+frontend/.svelte-kit/
+frontend/.next/
+frontend/out/
+node_modules/
+dist/
+
+# Descargas de Lotería y CSVs
+backend/descargas/
+*.csv
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Docker
+.docker/
+pgdata/
