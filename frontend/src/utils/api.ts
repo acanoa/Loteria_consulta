@@ -38,7 +38,7 @@ export interface ConsultaParams {
   offset: number;
 }
 
-const API_BASE = '/api';
+const API_BASE = '/apps/loteria-consulta/api';
 
 export async function fetchNumeros(params: ConsultaParams): Promise<{ data: NumeroRegistro[]; total: number }> {
   const query = new URLSearchParams({

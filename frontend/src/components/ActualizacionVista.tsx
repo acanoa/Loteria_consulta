@@ -19,25 +19,26 @@ import {
 
 interface ActualizacionVistaProps {
   onVolver: () => void;
+  estadoImport: EstadoImportacionResponse | null;
+  onActualizarEstado: (estado: EstadoImportacionResponse) => void;
 }
 
-export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver }) => {
+export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver, estadoImport, onActualizarEstado }) => {
   const [sorteos, setSorteos] = useState<SorteoOption[]>([]);
   const [sorteoSeleccionado, setSorteoSeleccionado] = useState<string>('');
   
   const [loadingSorteos, setLoadingSorteos] = useState(false);
   const [loadingAccion, setLoadingAccion] = useState(false);
   
-  const [statusResponse, setStatusResponse] = useState<EstadoImportacionResponse | null>(null);
-  
   const [mensajeLocal, setMensajeLocal] = useState<{ tipo: 'info' | 'exito' | 'error'; texto: string } | null>(null);
+  const [estabaActivo, setEstabaActivo] = useState(false);
 
-  // Cargar estado de la última importación y sorteos
+  // Cargar sorteos disponibles
   const cargarInformacion = async () => {
     setLoadingSorteos(true);
     setMensajeLocal(null);
     
-    // 1. Obtener Sorteos de la página de Loterías
+    // Obtener Sorteos de la página de Loterías
     try {
       const resSorteos = await fetchSorteosDisponibles();
       setSorteos(resSorteos);
@@ -58,45 +59,24 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
     } finally {
       setLoadingSorteos(false);
     }
-
-    // 2. Obtener el estado técnico de la última importación (puede fallar si la BD no está disponible)
-    try {
-      const resEstado = await fetchEstadoImportacion();
-      setStatusResponse(resEstado);
-    } catch (err) {
-      console.warn("No se pudo consultar el estado de la base de datos de importación:", err);
-    }
   };
 
   useEffect(() => {
     cargarInformacion();
   }, []);
 
-  // Poll de estado mientras la importación esté activa
+  // Detectar cuando termina la importación para mostrar el mensaje de éxito
   useEffect(() => {
-    if (!statusResponse?.importacion_activa) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetchEstadoImportacion();
-        setStatusResponse(res);
-        if (!res.importacion_activa) {
-          // Ha terminado la importación activa
-          clearInterval(interval);
-          if (res.ultima_importacion_correcta) {
-            setMensajeLocal({
-              tipo: 'exito',
-              texto: `Actualización completada: se importaron ${res.ultima_importacion_correcta.registros_importados} décimos.`
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Error consultando estado de importación:", err);
-      }
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [statusResponse?.importacion_activa]);
+    if (estadoImport?.importacion_activa) {
+      setEstabaActivo(true);
+    } else if (estabaActivo && estadoImport?.ultima_importacion_correcta) {
+      setEstabaActivo(false);
+      setMensajeLocal({
+        tipo: 'exito',
+        texto: `Actualización completada: se importaron ${estadoImport.ultima_importacion_correcta.registros_importados} décimos.`
+      });
+    }
+  }, [estadoImport?.importacion_activa, estadoImport?.ultima_importacion_correcta, estabaActivo]);
 
   const handleActualizar = async () => {
     if (!sorteoSeleccionado) return;
@@ -112,9 +92,9 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
         tipo: 'info',
         texto: 'La descarga y procesamiento del sorteo ha comenzado correctamente en el servidor.'
       });
-      // Refrescar estado para activar el poll
+      // Refrescar estado para activar el poll en App.tsx
       const estadoActualizado = await fetchEstadoImportacion();
-      setStatusResponse(estadoActualizado);
+      onActualizarEstado(estadoActualizado);
     } catch (err: any) {
       setMensajeLocal({
         tipo: 'error',
@@ -125,7 +105,7 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
     }
   };
 
-  const importandoActualmente = !!statusResponse?.importacion_activa;
+  const importandoActualmente = !!estadoImport?.importacion_activa;
 
   return (
     <div className="flex flex-col h-full space-y-5">
@@ -228,7 +208,7 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
         )}
 
         {/* Información del Estado del Servidor */}
-        {statusResponse && (
+        {estadoImport && (
           <div className="bg-slate-900/20 border border-slate-800/40 rounded-2xl p-4 space-y-3">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Detalle de Última Importación
@@ -238,22 +218,22 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
               <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-900">
                 <span className="text-slate-500 block mb-0.5">Sorteo Solicitado</span>
                 <span className="font-semibold text-slate-300 truncate block">
-                  {statusResponse.ultima_importacion_correcta?.sorteo_nombre || 'Ninguno'}
+                  {estadoImport.ultima_importacion_correcta?.sorteo_nombre || 'Ninguno'}
                 </span>
               </div>
 
               <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-900">
                 <span className="text-slate-500 block mb-0.5">Registros Cargados</span>
                 <span className="font-semibold text-slate-300">
-                  {statusResponse.ultima_importacion_correcta?.registros_importados ?? 0}
+                  {estadoImport.ultima_importacion_correcta?.registros_importados ?? 0}
                 </span>
               </div>
 
               <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-900">
                 <span className="text-slate-500 block mb-0.5">Fecha Inicio</span>
                 <span className="font-semibold text-slate-300">
-                  {statusResponse.ultima_importacion_correcta?.fecha_inicio 
-                    ? new Date(statusResponse.ultima_importacion_correcta.fecha_inicio).toLocaleString('es-ES')
+                  {estadoImport.ultima_importacion_correcta?.fecha_inicio 
+                    ? new Date(estadoImport.ultima_importacion_correcta.fecha_inicio).toLocaleString('es-ES')
                     : 'N/A'}
                 </span>
               </div>
@@ -261,13 +241,13 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
               <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-900">
                 <span className="text-slate-500 block mb-0.5">Tipo de Ejecución</span>
                 <span className="font-semibold text-slate-300 capitalize">
-                  {statusResponse.ultima_importacion_correcta?.tipo_ejecucion || 'N/A'}
+                  {estadoImport.ultima_importacion_correcta?.tipo_ejecucion || 'N/A'}
                 </span>
               </div>
             </div>
 
             {/* Si el último intento fue fallido (o en progreso pero falló anteriormente) */}
-            {statusResponse.ultima_importacion_correcta === null && statusResponse.total_registros === 0 && (
+            {estadoImport.ultima_importacion_correcta === null && estadoImport.total_registros === 0 && (
               <div className="p-3 bg-red-950/10 border border-red-900/30 rounded-xl text-xs text-red-400">
                 Aún no se ha realizado ninguna importación exitosa de sorteos en el sistema.
               </div>

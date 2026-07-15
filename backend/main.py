@@ -99,7 +99,7 @@ def get_numeros(
     tipo_filtro: str = Query(..., description="menos_50, empieza, termina"),
     filtro_valor: Optional[str] = Query(None, description="2 o 3 dígitos numéricos"),
     orden: str = Query("asc", description="asc o desc"),
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(50000, ge=1, le=100000),
     offset: int = Query(0, ge=0)
 ):
     """Consulta paginada y filtrada de décimos."""

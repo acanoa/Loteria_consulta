@@ -213,7 +213,11 @@ def consultar_numeros_loteria(
             
             if tipoFiltro := tipo_filtro:
                 if tipoFiltro == "menos_50":
-                    query_where = "WHERE fracciones < 50"
+                    threshold = 50
+                    if filtro_valor and filtro_valor.isdigit():
+                        threshold = int(filtro_valor)
+                    query_where = "WHERE fracciones < %s"
+                    params.append(threshold)
                 elif tipoFiltro == "empieza" and filtro_valor:
                     query_where = "WHERE numero LIKE %s"
                     params.append(f"{filtro_valor}%")
