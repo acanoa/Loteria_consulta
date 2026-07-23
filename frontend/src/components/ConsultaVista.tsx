@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  fetchNumeros, 
-} from '../utils/api';
+import { fetchNumeros } from '../services/api';
 import type {
   NumeroRegistro, 
   EstadoImportacionResponse 
-} from '../utils/api';
+} from '../types/api';
 import { 
   Search, 
   ArrowUpDown, 
@@ -57,8 +55,8 @@ export const ConsultaVista: React.FC<ConsultaVistaProps> = ({ onIrAActualizar, e
           offset,
         });
         setNumeros(res.data);
-      } catch (err: any) {
-        setErrorQuery(err.message || 'Error de consulta');
+      } catch (err: unknown) {
+        setErrorQuery(err instanceof Error ? err.message : 'Error de consulta');
       } finally {
         setLoading(false);
       }

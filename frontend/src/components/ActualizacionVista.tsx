@@ -3,11 +3,11 @@ import {
   fetchSorteosDisponibles, 
   iniciarActualizacionManual, 
   fetchEstadoImportacion, 
-} from '../utils/api';
+} from '../services/api';
 import type {
   SorteoOption, 
   EstadoImportacionResponse,
-} from '../utils/api';
+} from '../types/api';
 import { 
   ArrowLeft, 
   RefreshCw, 
@@ -50,7 +50,7 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
       } else if (resSorteos.length > 0) {
         setSorteoSeleccionado(resSorteos[0].id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al cargar sorteos", err);
       setMensajeLocal({ 
         tipo: 'error', 
@@ -87,7 +87,10 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
     setLoadingAccion(true);
     setMensajeLocal(null);
     try {
-      await iniciarActualizacionManual(sorteoSeleccionado, sorteoNombre);
+      await iniciarActualizacionManual(
+        sorteoSeleccionado,
+        sorteoNombre,
+      );
       setMensajeLocal({
         tipo: 'info',
         texto: 'La descarga y procesamiento del sorteo ha comenzado correctamente en el servidor.'
@@ -95,10 +98,10 @@ export const ActualizacionVista: React.FC<ActualizacionVistaProps> = ({ onVolver
       // Refrescar estado para activar el poll en App.tsx
       const estadoActualizado = await fetchEstadoImportacion();
       onActualizarEstado(estadoActualizado);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMensajeLocal({
         tipo: 'error',
-        texto: err.message || 'No se pudo iniciar la descarga.'
+        texto: err instanceof Error ? err.message : 'No se pudo iniciar la descarga.'
       });
     } finally {
       setLoadingAccion(false);

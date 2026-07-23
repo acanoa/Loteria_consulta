@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { ConsultaVista } from './components/ConsultaVista';
 import { ActualizacionVista } from './components/ActualizacionVista';
 import { Coins, RefreshCw } from 'lucide-react';
-import { fetchEstadoImportacion } from './utils/api';
-import type { EstadoImportacionResponse } from './utils/api';
+import { fetchEstadoImportacion } from './services/api';
+import type { EstadoImportacionResponse } from './types/api';
 import './App.css';
 
 function App() {
