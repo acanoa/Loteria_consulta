@@ -58,8 +58,8 @@ export const ConsultaVista: React.FC<ConsultaVistaProps> = ({ onIrAActualizar, e
 
   // Cargar números de lotería
   useEffect(() => {
-    // Si es tipo empieza/termina, validar longitud de 2 o 3 dígitos
-    if ((tipoFiltro === 'empieza' || tipoFiltro === 'termina') && !/^\d{2,3}$/.test(filtroValor)) {
+    // Si es tipo empieza/termina, validar longitud de 2 a 4 dígitos
+    if ((tipoFiltro === 'empieza' || tipoFiltro === 'termina') && !/^\d{2,4}$/.test(filtroValor)) {
       setNumeros([]);
       setTotalResultados(0);
       return;
@@ -94,7 +94,7 @@ export const ConsultaVista: React.FC<ConsultaVistaProps> = ({ onIrAActualizar, e
   // Validar entrada del filtro de búsqueda
   const handleFiltroValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, ''); // Solo dígitos
-    const maxLen = tipoFiltro === 'menos_50' ? 4 : 3;
+    const maxLen = 4;
     if (val.length <= maxLen) {
       setFiltroValor(val);
     }
@@ -308,7 +308,7 @@ export const ConsultaVista: React.FC<ConsultaVistaProps> = ({ onIrAActualizar, e
               type="text"
               pattern="[0-9]*"
               inputMode="numeric"
-              placeholder="Introduce 2 o 3 dígitos"
+              placeholder="Introduce de 2 a 4 dígitos"
               value={filtroValor}
               onChange={handleFiltroValorChange}
               className="block w-full pl-9 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
@@ -353,11 +353,11 @@ export const ConsultaVista: React.FC<ConsultaVistaProps> = ({ onIrAActualizar, e
             <p className="text-sm font-semibold text-slate-300">Error al cargar datos</p>
             <p className="text-xs text-slate-500 mt-1 max-w-[250px]">{errorQuery}</p>
           </div>
-        ) : (tipoFiltro === 'empieza' || tipoFiltro === 'termina') && !/^\d{2,3}$/.test(filtroValor) ? (
+        ) : (tipoFiltro === 'empieza' || tipoFiltro === 'termina') && !/^\d{2,4}$/.test(filtroValor) ? (
           <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
             <Search className="w-8 h-8 text-slate-600 mb-2" />
             <p className="text-xs text-slate-500 max-w-[200px]">
-              Escribe 2 o 3 dígitos numéricos para buscar coincidencias.
+              Escribe de 2 a 4 dígitos numéricos para buscar coincidencias.
             </p>
           </div>
         ) : numeros.length === 0 ? (

@@ -64,11 +64,11 @@ def list_numbers(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     if tipo_filtro in {FilterType.STARTS_WITH, FilterType.ENDS_WITH} and (
-        filtro_valor is None or len(filtro_valor) not in {2, 3}
+        filtro_valor is None or len(filtro_valor) not in {2, 3, 4}
     ):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Los filtros de inicio y terminación requieren 2 o 3 dígitos.",
+            detail="Los filtros de inicio y terminación requieren de 2 a 4 dígitos.",
         )
     data, total = request.app.state.repository.query_numbers(
         tipo_filtro.value,
