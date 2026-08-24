@@ -13,7 +13,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copiar la configuración personalizada de Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copiar los archivos estáticos construidos
 COPY --from=build /app/dist /usr/share/nginx/html/apps/loteria-consulta

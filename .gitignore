@@ -40,3 +40,7 @@ backend/descargas/
 # Docker
 .docker/
 pgdata/
+
+# Copias y evidencias operativas locales
+backups/
+artifacts/

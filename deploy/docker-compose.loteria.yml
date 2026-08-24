@@ -1,0 +1,49 @@
+services:
+  loteria-backend:
+    container_name: loteria_backend_supabase
+    build:
+      context: "D:/Antigravity/Proyectos/Loteria Nacional/backend"
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "postgresql://loteria_runtime:${LOTERIA_DB_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}"
+      APP_ENV: production
+      CORS_ORIGINS: "${SUPABASE_PUBLIC_URL}"
+      ADMIN_API_TOKEN: "${LOTERIA_ADMIN_TOKEN}"
+      AUTO_IMPORT_ENABLED: "true"
+      AUTO_IMPORT_HOUR: "03:00"
+      AUTO_IMPORT_TIMEZONE: Europe/Madrid
+      IMPORT_STALE_MINUTES: "30"
+      DATABASE_POOL_MIN: "1"
+      DATABASE_POOL_MAX: "5"
+      DOWNLOAD_DIR: /app/descargas
+    volumes:
+      - "D:/Antigravity/Proyectos/Loteria Nacional/backend/descargas:/app/descargas"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  loteria-frontend:
+    container_name: loteria_frontend_supabase
+    build:
+      context: "D:/Antigravity/Proyectos/Loteria Nacional/frontend"
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      LOTERIA_ADMIN_TOKEN: "${LOTERIA_ADMIN_TOKEN}"
+      NGINX_ENVSUBST_FILTER: "LOTERIA_ADMIN_TOKEN"
+    depends_on:
+      loteria-backend:
+        condition: service_healthy
+    restart: unless-stopped
